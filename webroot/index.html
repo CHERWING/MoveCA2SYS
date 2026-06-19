@@ -76,7 +76,10 @@ body{font-family:-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--bg)
     <h1>MoveCA<span>2SYS</span></h1>
     <div class="ver">证书迁移管理</div>
   </div>
-  <button class="btn btn-outline btn-sm" onclick="doRefresh()" id="refreshBtn">⟳ 刷新</button>
+  <div style="display:flex;gap:6px">
+    <button class="btn btn-outline btn-sm" onclick="doCheckUpdate()" id="updateBtn">⬇ 更新</button>
+    <button class="btn btn-outline btn-sm" onclick="doRefresh()" id="refreshBtn">⟳ 刷新</button>
+  </div>
 </div>
 
 <div class="stats">
@@ -102,6 +105,23 @@ body{font-family:-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--bg)
 </div>
 
 <div id="sysUserContainer"></div>
+
+<div class="collapsible">
+  <div class="collapsible-hdr" onclick="toggleCollapse('settingsPanel')">
+    <span>⚙️ 设置</span>
+    <span class="arrow" id="arr-settingsPanel">▼</span>
+  </div>
+  <div class="collapsible-body" id="settingsPanel">
+    <div style="margin-bottom:10px">
+      <label style="font-size:11px;display:block;margin-bottom:4px">HTTP 代理（可选，用于检测更新）</label>
+      <div style="display:flex;gap:8px">
+        <input id="proxyInput" placeholder="如 127.0.0.1:10809" style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-size:12px;outline:none" value="127.0.0.1:10809">
+        <button class="btn btn-outline btn-sm" onclick="doCheckUpdate()">检查更新</button>
+      </div>
+    </div>
+    <div id="updateResult" style="font-size:12px;color:var(--text2);line-height:1.6"></div>
+  </div>
+</div>
 
 <div class="footer">MoveCA2SYS · Made by CHERWIN</div>
 
@@ -341,6 +361,44 @@ function doMoveAll() {
         doRefresh();
       })
       .catch(function(err) { showToast('错误: ' + err.message); doRefresh(); });
+  }, 100);
+}
+
+function doCheckUpdate() {
+  var proxy = ($('proxyInput').value||'').trim();
+  var resultEl = $('updateResult');
+  $('updateBtn').disabled = true;
+  resultEl.innerHTML = '<span style="color:var(--text2)">检查中...</span>';
+
+  var cmd = 'sh ' + MODULE_DIR + '/common/check-update.sh';
+  if (proxy) cmd += ' "http://' + proxy + '"';
+
+  setTimeout(function() {
+    run(cmd)
+      .then(function(out) {
+        try {
+          var r = JSON.parse(out);
+          if (!r.ok) {
+            resultEl.innerHTML = '<span style="color:var(--orange)">✗ ' + esc(r.error||'检查失败') + '</span>';
+            return;
+          }
+          var cur = r.current, lat = r.latest;
+          var html = '<div>当前版本: <strong>' + esc(cur.version||'?') + '</strong> (code: ' + esc(cur.code||'?') + ')</div>';
+          if (r.need_update) {
+            html += '<div style="color:var(--orange);margin-top:4px">🔄 发现新版本: <strong>' + esc(lat.version||'?') + '</strong></div>';
+            if (r.download) html += '<div style="margin-top:6px"><a href="' + esc(r.download) + '" target="_blank" class="btn btn-primary btn-sm" style="text-decoration:none;display:inline-block">⬇ 下载最新版</a></div>';
+          } else {
+            html += '<div style="color:var(--green);margin-top:4px">✓ 已是最新版本</div>';
+          }
+          resultEl.innerHTML = html;
+        } catch(e) {
+          resultEl.innerHTML = '<span style="color:var(--orange)">✗ 解析失败: ' + esc(e.message) + '</span>';
+        }
+      })
+      .catch(function(err) {
+        resultEl.innerHTML = '<span style="color:var(--accent)">✗ ' + esc(err.message||'网络错误') + '</span>';
+      })
+      .then(function() { $('updateBtn').disabled = false; });
   }, 100);
 }
 

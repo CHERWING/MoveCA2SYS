@@ -1,7 +1,8 @@
 id=MoveCA2SYS
 name=MoveCA2SYS
-version=v1.2
-versionCode=20240618
+version=v1.3
+versionCode=20240619
 author=CHERWIN
 description=证书迁移管理工具 - 通过 WebUI 手动将 HttpCanary、ProxyPin 等用户证书移至系统目录，支持全选/单个移动
+updateJson=https://raw.githubusercontent.com/CHERWING/MoveCA2SYS/main/update.json
 webRoot=webroot

@@ -4,18 +4,20 @@ param(
   [string]$OutputDir = (Split-Path -Parent $PSScriptRoot)
 )
 
-$timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
-$dest = Join-Path $OutputDir "CHERWIN_MoveCA2SYS_$timestamp.zip"
+$ver = "v1.3"
+$dest = Join-Path $OutputDir "MoveCA2SYS_$ver.zip"
 
 Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
-$exclude = @('pack.ps1')
+$exclude = @('pack.ps1', '.gitignore', '.gitkeep', 'README.md', 'update.json', 'CHANGELOG.md')
 $zip = [System.IO.Compression.ZipFile]::Open($dest, [System.IO.Compression.ZipArchiveMode]::Create)
 
 try {
   Get-ChildItem -LiteralPath $SourceDir -Recurse | ForEach-Object {
     $relative = $_.FullName.Substring($SourceDir.Length + 1).Replace('\', '/')
+    # 排除 .git 目录
+    if ($relative -eq '.git' -or $relative -like '.git/*') { return }
     foreach ($ex in $exclude) {
       if ($relative -eq $ex) { return }
     }
