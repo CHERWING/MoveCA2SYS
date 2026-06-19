@@ -1,99 +1,115 @@
 # MoveCA2SYS 🚀
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Magisk-支持-00BFA5?style=flat-square">
-  <img src="https://img.shields.io/badge/KernelSU-支持-1976D2?style=flat-square">
-  <img src="https://img.shields.io/badge/APatch-支持-FF6F00?style=flat-square">
-  <img src="https://img.shields.io/badge/openssl-内置-4CAF50?style=flat-square">
-  <img src="https://img.shields.io/badge/在线更新-支持-FF5722?style=flat-square">
+  <img src="https://img.shields.io/badge/Magisk-Support-00BFA5?style=flat-square">
+  <img src="https://img.shields.io/badge/KernelSU-Support-1976D2?style=flat-square">
+  <img src="https://img.shields.io/badge/APatch-Support-FF6F00?style=flat-square">
+  <img src="https://img.shields.io/badge/openssl-Built-in-4CAF50?style=flat-square">
+  <img src="https://img.shields.io/badge/OTA_Update-Supported-FF5722?style=flat-square">
 </p>
 
 <p align="center">
-  将抓包证书一键移至系统目录的 WebUI 管理模块 📱<br>
-  支持 HttpCanary · ProxyPin · Packet Capture · Fiddler · Charles · 手动放置
+  Move packet capture certificates to Android system trust store via WebUI 📱<br>
+  <strong>将抓包证书一键移至系统证书目录的 WebUI 管理模块</strong><br>
+  HttpCanary · ProxyPin · Packet Capture · Fiddler · Charles · Manual
 </p>
 
 ---
 
-## ✨ 功能亮点
+## ✨ Features / 功能亮点
 
-- **🖥️ WebUI 管理** — 模块管理器直接打开，图形化操作
-- **📊 统计面板** — 总计 / 已迁移 / 待迁移，一目了然
-- **🔍 搜索过滤** — 按 hash、Subject、文件名、来源 App 实时筛选
-- **📋 证书详情** — hash 名、Subject、原始文件名、格式、大小、状态
-- **🔄 在线更新** — KernelSU/Magisk 面板内直接检测更新，一键下载
-- **📦 内置 openssl** — 四架构静态编译，安装时自动匹配
-- **🔄 PEM 自动转换** — PEM/CRT/DER 自动计算 hash → `<hash>.0`
-- **📁 手动放置** — 放入 `/storage/emulated/0/MoveCA2SYS/` 即可识别
-- **🛡️ 去重保护** — 同一证书仅显示一次
-- **📝 跟踪清单** — 记录已迁移证书，增量操作、干净卸载
+- **🖥️ WebUI Management** — Graphical interface in module manager, no CLI needed / 图形化操作
+- **📊 Stats Dashboard** — Total / Moved / Pending counts / 统计面板一目了然
+- **🔍 Search & Filter** — By hash, subject, filename, source app / 多维搜索过滤
+- **📋 Cert Details** — Hash name, subject, original filename, format, size, status / 证书详情
+- **🔄 OTA Updates** — Auto-detect updates in Magisk/KernelSU manager / 面板内在线更新
+- **📦 Built-in openssl** — Pre-compiled for arm64-v8a / armeabi-v7a / x86_64 / x86 / 内置四架构 openssl
+- **🔄 Auto PEM Convert** — PEM/CRT/DER → `subject_hash.0` via openssl / 自动转换
+- **📁 Manual Drop** — Place certs in `/storage/emulated/0/MoveCA2SYS/` / 手动放置即识别
+- **🛡️ Dedup Protection** — Each cert shown once / 同一证书仅显示一次
+- **📝 Tracking Log** — `certs_installed.txt` tracks moved certs for clean uninstall / 跟踪清单
 
-## 📥 安装
+## 📥 Installation / 安装
 
 ```bash
-# 在 Magisk / KernelSU / APatch 管理器中直接刷入 zip
+# Flash the zip in Magisk / KernelSU / APatch manager
+# 在模块管理器直接刷入
 ```
 
-## 🎮 使用指南
+## 🎮 Usage / 使用指南
 
-1. 打开 Magisk/KernelSU → **模块** → **MoveCA2SYS**
-2. 点击 **UI** 按钮进入管理界面
-3. 单击 **刷新** 扫描证书
-4. 点击 **迁移全部** 或逐行点击 **移动**
+1. Open Magisk/KernelSU → **Modules** → **MoveCA2SYS**
+2. Tap **UI** to open the WebUI / 点击 **UI** 按钮
+3. Tap **Refresh** to scan certificates / 单击 **刷新** 扫描
+4. Tap **Move All** or click **Move** per row / 迁移全部或逐行移动
 
-### 在线更新
+### OTA Update / 在线更新
 
-模块管理器面板内会自动检测更新并显示提示，也可直接点击 **更新** 按钮。
+The module manager automatically checks for updates via `update.json`. You can also tap the **Update** button in WebUI.
 
-## 📂 文件结构
+模块管理器面板内自动检测更新，WebUI 也提供检测按钮。
+
+### Verification / 验证
+
+```bash
+# List system certificates
+ls /system/etc/security/cacerts/ | grep -E "^[a-f0-9]{8}\.0$" | head -10
+
+# View migration log
+cat /cache/moveca2sys.log
+```
+
+## 📂 File Structure / 文件结构
 
 ```
 MoveCA2SYS/
-├── module.prop                         # 📋 模块元数据 (含 updateJson)
-├── update.json                         # 🔄 更新信息
-├── CHANGELOG.md                        # 📝 更新日志
+├── module.prop                         # 📋 Module metadata (with updateJson)
+├── update.json                         # 🔄 OTA update info
+├── CHANGELOG.md                        # 📝 Changelog
 ├── post-fs-data.sh                     # 🚀 Android 14+ mount --bind
-├── customize.sh                        # ⚙️ 安装脚本
-├── uninstall.sh                        # 🗑️ 卸载清理
-├── pack.ps1                            # 📦 打包脚本
+├── customize.sh                        # ⚙️ Install script
+├── uninstall.sh                        # 🗑️ Uninstall cleanup
+├── pack.ps1                            # 📦 Packaging script (.NET ZipFile)
 ├── common/
-│   ├── scan.sh                         # 🔍 扫描证书输出 JSON
-│   ├── move.sh                         # 📤 移动证书
-│   ├── check-update.sh                 # 🔄 检测更新 (WebUI)
+│   ├── scan.sh                         # 🔍 Cert scanner → JSON
+│   ├── move.sh                         # 📤 Move certificates
+│   ├── check-update.sh                 # 🔄 Update check (WebUI)
 │   └── tools/
-│       ├── arm64-v8a/openssl           # 🤖 静态 openssl
+│       ├── arm64-v8a/openssl           # 🤖 Static openssl
 │       ├── armeabi-v7a/openssl
 │       ├── x86_64/openssl
 │       └── x86/openssl
 ├── webroot/
-│   └── index.html                      # 🌐 WebUI 管理页面
-└── system/etc/security/cacerts/        # 📁 证书覆写目录
+│   └── index.html                      # 🌐 WebUI management page
+└── system/etc/security/cacerts/        # 📁 Module cert overlay (no .replace)
 ```
 
-## 🔧 技术机制
+## 🔧 Technical Details / 技术机制
 
-| 特性 | 说明 |
-|------|------|
-| **Android 13 及以下** | 复制到 `/system/etc/security/cacerts`，KernelSU magic mount 重启保留 |
-| **Android 14+ (SDK ≥ 34)** | `mount --bind` overlay → 使 `/apex/com.android.conscrypt/cacerts` 可写 |
-| **证书转换** | openssl `x509 -subject_hash` → `<hash>.0` |
-| **权限修复** | `chmod 644` + `chcon u:object_r:system_file:s0` |
-| **双拷贝策略** | 同时复制到系统目录（立即生效）和模块目录（重启保留） |
-| **在线更新** | `update.json` 指向 GitHub Release，模块管理器自动检测 |
-| **查找限深** | `find -maxdepth 6` 避免扫描 `/data/data` 卡死 |
+| Feature | Description |
+|---------|-------------|
+| **Android ≤13** | Copy to `/system/etc/security/cacerts`; KernelSU magic mount persists after reboot |
+| **Android 14+ (SDK ≥ 34)** | `mount --bind` overlay → writeable `/apex/com.android.conscrypt/cacerts` |
+| **Cert Convert** | openssl `x509 -subject_hash` → PEM/CRT/DER → `<hash>.0` |
+| **Permission Fix** | `chmod 644` + `chcon u:object_r:system_file:s0` |
+| **Dual Copy** | Copies to system dir (immediate) + module dir (reboot persistence) |
+| **OTA Update** | `update.json` → GitHub Release; auto-detect in module manager |
+| **Find Limit** | `find -maxdepth 6` prevents `/data/data` scan freeze |
 
-## 📎 支持的证书来源
+## 📎 Supported Sources / 支持的来源
 
-| 来源 | 格式 |
-|------|------|
+| Source | Format |
+|--------|--------|
 | HttpCanary (`com.guoshi.httpcanary`) | PEM / `.0` |
-| ProxyPin (`com.lixiqing.proxypin`) | 任意 |
-| Packet Capture (`app.greyshirts.*`) | 任意 |
+| ProxyPin (`com.lixiqing.proxypin`) | Any |
+| Packet Capture (`app.greyshirts.*`) | Any |
 | Fiddler (`com.telerik.fiddler`) | CER / PEM |
 | Charles (`com.xk72.charles`) | PEM |
-| 系统设置安装的用户证书 | `.0` |
-| 手动放置 (`/storage/emulated/0/MoveCA2SYS/`) | 任意 |
+| System Settings → User certs | `.0` |
+| Manual (`/storage/emulated/0/MoveCA2SYS/`) | Any |
 
-## 🧹 卸载
+## 🧹 Uninstall / 卸载
 
-直接在模块管理器中移除即可，`uninstall.sh` 自动清理已迁移证书。
+Remove the module in manager — `uninstall.sh` automatically cleans up all migrated certs.
+
+在模块管理器中移除即可，`uninstall.sh` 自动清理已迁移证书。
